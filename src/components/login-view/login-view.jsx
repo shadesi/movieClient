@@ -9,9 +9,12 @@ export const LoginView = ({ onLoggedIn }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const data = { username, password };
+    const data = { 
+      Username: username,
+      Password: password
+     };
 
-    fetch("https://movie-api-4o5a.onrender.com/login", {
+    fetch("https://movie-api-c3t5.onrender.com/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -22,6 +25,7 @@ export const LoginView = ({ onLoggedIn }) => {
           localStorage.setItem("user", JSON.stringify(data.user));
           localStorage.setItem("token", data.token);
           onLoggedIn(data.user, data.token);
+          alert("Login successful");
         } else {
           alert("No such user");
         }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
@@ -15,11 +15,12 @@ export const MainView = () => {
   const [user, setUser] = useState(storedUser);
   const [token, setToken] = useState(storedToken);
   const [error, setError] = useState(null);
+  const { movieId } = useParams();
 
   useEffect(() => {
     if (!token) return;
 
-    fetch("https://movie-api-4o5a.onrender.com/movies", {
+    fetch("https://movie-api-c3t5.onrender.com/movies", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => {
@@ -31,9 +32,9 @@ export const MainView = () => {
       .then((data) => {
         const moviesFromApi = data.map((movie) => ({
           id: movie._id,
-          title: movie.title,
-          image: movie.imageurl,
-          directors: movie.directors?.[0]?.name || "Unknown Director",
+          title: movie.Title,
+          image: movie.ImagePath,
+          directors: movie.Director.Name?.name || "Unknown Director",
         }));
         setMovies(moviesFromApi);
       })
@@ -97,11 +98,19 @@ export const MainView = () => {
                   <Col>The list is empty!</Col>
                 ) : (
                   <Col md={8}>
-                    <MovieView movie={movies.find((m) => m.id === movieId)} onBackClick={() => navigate('/')} />
+                    {movies.find((m) => m.id === movieId) ? (
+                      <MovieView
+                        movie={movies.find((m) => m.id === movieId)}
+                        onBackClick={() => navigate("/")}
+                      />
+                    ) : (
+                      <Col>Movie not found!</Col>
+                    )}
                   </Col>
                 )
               }
             />
+
             <Route
               path="/"
               element={
@@ -112,7 +121,14 @@ export const MainView = () => {
                 ) : (
                   <>
                     {movies.map((movie) => (
-                      <Col xs={12} sm={6} md={4} lg={3} className="mb-4" key={movie.id}>
+                      <Col
+                        xs={12}
+                        sm={6}
+                        md={4}
+                        lg={3}
+                        className="mb-4"
+                        key={movie.id}
+                      >
                         <MovieCard movie={movie} />
                       </Col>
                     ))}

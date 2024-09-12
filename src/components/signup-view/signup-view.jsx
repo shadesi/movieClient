@@ -12,14 +12,20 @@ export const SignupView = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const data = { name, username, password, email, birthday };
+    const data = { 
+      Username: username,
+      Password: password,
+      Email: email,
+      Birthday: birthday,
+      Name: name
+     };
 
-    fetch("https://movie-api-4o5a.onrender.com/users", {
+    fetch("https://movie-api-c3t5.onrender.com/users", {
       method: "POST",
       body: JSON.stringify(data),
       headers: { "Content-Type": "application/json" },
     }).then((response) => {
-      if (response.ok) {
+      if (response.status === 201) {
         alert("Signup successful");
         window.location.reload();
       } else {
