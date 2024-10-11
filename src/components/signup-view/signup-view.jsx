@@ -1,6 +1,6 @@
-// signup-view.jsx
 import React, { useState } from "react";
 import { Form, Button, Container } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 export const SignupView = () => {
   const [name, setName] = useState("");
@@ -9,16 +9,18 @@ export const SignupView = () => {
   const [email, setEmail] = useState("");
   const [birthday, setBirthday] = useState("");
 
+  const navigate = useNavigate(); // useNavigate hook
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const data = { 
+    const data = {
       Username: username,
       Password: password,
       Email: email,
       Birthday: birthday,
-      Name: name
-     };
+      Name: name,
+    };
 
     fetch("https://movie-api-c3t5.onrender.com/users", {
       method: "POST",
@@ -27,7 +29,7 @@ export const SignupView = () => {
     }).then((response) => {
       if (response.status === 201) {
         alert("Signup successful");
-        window.location.reload();
+        navigate("/login", { replace: true }); // Navigate programmatically after successful signup
       } else {
         alert("Signup failed");
       }

@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
@@ -8,18 +15,23 @@ import { SignupView } from "../signup-view/signup-view";
 import { NavigationBar } from "../navigation-bar/navigation-bar";
 
 export const MainView = () => {
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const storedToken = localStorage.getItem("token");
-
   const [movies, setMovies] = useState([]);
-  const [user, setUser] = useState(storedUser);
-  const [token, setToken] = useState(storedToken);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { movieId } = useParams();
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const storedToken = localStorage.getItem("token");
+    setUser(storedUser);
+    setToken(storedToken);
+  }, []);
 
   useEffect(() => {
     if (!token) return;
 
+    setLoading(true);
     fetch("https://movie-api-c3t5.onrender.com/movies", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -34,27 +46,36 @@ export const MainView = () => {
           id: movie._id,
           title: movie.Title,
           image: movie.ImagePath,
-          directors: movie.Director.Name?.name || "Unknown Director",
+          directors: movie?.Director?.Name || "Unknown Director",
         }));
         setMovies(moviesFromApi);
       })
-      .catch((error) => setError(error.message));
+      .catch((error) => setError(error.message))
+      .finally(() => setLoading(false));
   }, [token]);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  const handleLogout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.clear();
+  };
+
+  const checkUserAndMovies = (component) => {
+    if (!user) {
+      return <Navigate to="/login" replace />;
+    }
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+    if (movies.length === 0) {
+      return <Col>The list is empty!</Col>;
+    }
+    return component;
+  };
 
   return (
-    <BrowserRouter>
-      <NavigationBar
-        user={user}
-        onLoggedOut={() => {
-          setUser(null);
-          setToken(null);
-          localStorage.clear();
-        }}
-      />
+    <Router>
+      <NavigationBar user={user} onLoggedOut={handleLogout} />
       <Container className="mt-5">
         <Row className="justify-content-md-center">
           <Routes>
@@ -92,33 +113,15 @@ export const MainView = () => {
             <Route
               path="/movies/:movieId"
               element={
-                !user ? (
-                  <Navigate to="/login" replace />
-                ) : movies.length === 0 ? (
-                  <Col>The list is empty!</Col>
-                ) : (
-                  <Col md={8}>
-                    {movies.find((m) => m.id === movieId) ? (
-                      <MovieView
-                        movie={movies.find((m) => m.id === movieId)}
-                        onBackClick={() => navigate("/")}
-                      />
-                    ) : (
-                      <Col>Movie not found!</Col>
-                    )}
-                  </Col>
+                checkUserAndMovies(
+                  <MovieDetails />
                 )
               }
             />
-
             <Route
               path="/"
               element={
-                !user ? (
-                  <Navigate to="/login" replace />
-                ) : movies.length === 0 ? (
-                  <Col>The list is empty!</Col>
-                ) : (
+                checkUserAndMovies(
                   <>
                     {movies.map((movie) => (
                       <Col
@@ -132,14 +135,7 @@ export const MainView = () => {
                         <MovieCard movie={movie} />
                       </Col>
                     ))}
-                    <Button
-                      variant="danger"
-                      onClick={() => {
-                        setUser(null);
-                        setToken(null);
-                        localStorage.clear();
-                      }}
-                    >
+                    <Button variant="danger" onClick={handleLogout}>
                       Logout
                     </Button>
                   </>
@@ -149,6 +145,59 @@ export const MainView = () => {
           </Routes>
         </Row>
       </Container>
-    </BrowserRouter>
+    </Router>
+  );
+};
+
+const MovieDetails = () => {
+  const { movieId } = useParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null)
+  const [movie, setMovie] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const storedToken = localStorage.getItem("token");
+    setUser(storedUser);
+    setToken(storedToken);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    setLoading(true);
+    fetch(`https://movie-api-c3t5.onrender.com/movies/${movieId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => setMovie(data))
+      .catch((error) => setError(error.message))
+      .finally(() => setLoading(false));
+  }, [user, movieId]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!movie) {
+    return <div>Movie not found!</div>;
+  }
+
+  return (
+    <Col md={8}>
+      <MovieView movie={movie} onBackClick={() => navigate("/")} />
+    </Col>
   );
 };
