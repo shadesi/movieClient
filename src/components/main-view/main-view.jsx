@@ -13,6 +13,7 @@ import { MovieView } from "../movie-view/movie-view";
 import { LoginView } from "../login-view/login-view";
 import { SignupView } from "../signup-view/signup-view";
 import { NavigationBar } from "../navigation-bar/navigation-bar";
+import { ProfileView } from "../profile-view/profile-view";
 
 export const MainView = () => {
   const [movies, setMovies] = useState([]);
@@ -111,6 +112,14 @@ export const MainView = () => {
               }
             />
             <Route
+              path="/profile"
+              element={
+                checkUserAndMovies(
+                  <ProfileView user={user} token={token} setUser={setUser} movies={movies} />
+                )
+              }
+            />
+            <Route
               path="/movies/:movieId"
               element={
                 checkUserAndMovies(
@@ -132,7 +141,27 @@ export const MainView = () => {
                         className="mb-4"
                         key={movie.id}
                       >
-                        <MovieCard movie={movie} />
+                        <MovieCard movie={movie} onAddToFavorites={(movieId) => {
+                          fetch(`https://movie-api-c3t5.onrender.com/users/${user.Username}/movies/${movieId}`, {
+                            method: "POST",
+                            headers: { Authorization: `Bearer ${token}` },
+                          })
+                            .then((response) => {
+                              if (response.ok) {
+                                setUser({
+                                  ...user,
+                                  FavoriteMovies: [...user.FavoriteMovies, movieId],
+                                });
+                                alert("Movie added to favorites");
+                              } else {
+                                alert("Failed to add movie to favorites");
+                              }
+                            })
+                            .catch((e) => {
+                              console.error("Add favorite movie error: ", e);
+                              alert("Something went wrong");
+                            });
+                        }} />
                       </Col>
                     ))}
                     <Button variant="danger" onClick={handleLogout}>
