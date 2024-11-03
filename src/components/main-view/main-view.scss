@@ -1,0 +1,48 @@
+// Import Bootstrap's SCSS files
+@use "~bootstrap/scss/bootstrap" as *;
+
+// Custom styles for the main view
+.main-view {
+  background-color: $primary-color;
+  color: $text-color;
+  padding: 20px;
+
+  .movie-card {
+    margin-bottom: 20px;
+  }
+
+  .navbar {
+    background-color: $navbar-bg-color;
+    .nav-link {
+      color: $navbar-link-color;
+
+      &:hover {
+        color: $navbar-link-hover-color;
+      }
+    }
+  }
+
+  .profile-view {
+    .card {
+      background-color: $secondary-color;
+      color: $text-color;
+      border: 1px solid $border-color;
+
+      .card-header,
+      .card-footer {
+        background-color: darken($secondary-color, 10%);
+      }
+    }
+
+    .btn {
+      background-color: $secondary-color;
+      color: $text-color;
+      border: 1px solid $border-color;
+
+      &:hover {
+        background-color: $hover-color;
+        color: $text-color;
+      }
+    }
+  }
+}
