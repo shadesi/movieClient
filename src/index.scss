@@ -1,5 +1,5 @@
 // Import Bootstrap's SCSS files
-@import "~bootstrap/scss/bootstrap";
+@use "~bootstrap/scss/bootstrap" as *;
 
 // Color Variables
 $primary-color: #1f1f1f;           // Dark background color
@@ -12,6 +12,12 @@ $link-color: #80bdff;              // Link color
 $link-hover-color: #b3d7ff;        // Link hover color
 $input-background-color: #333;     // Input field background color
 $input-text-color: #e0e0e0;        // Input field text color
+
+// New color variables for the navbar
+$navbar-bg-color: #001f3f;         // Navy blue
+$navbar-hover-color: #007bff;      // Light blue
+$navbar-link-color: #001f3f;       // Navy blue for links
+$navbar-link-hover-color: #007bff; // Light blue for link hover
 
 // Global body styles
 body {
@@ -67,15 +73,15 @@ textarea {
 
 // Navbar styles
 .navbar {
-  background-color: $secondary-color;
+  background-color: $navbar-bg-color;
   border-bottom: 1px solid $border-color;
 
   .navbar-brand,
   .navbar-nav .nav-link {
-    color: $text-color;
+    color: $navbar-link-color;
 
     &:hover {
-      color: $link-hover-color;
+      color: $navbar-link-hover-color;
     }
   }
 }
